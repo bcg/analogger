@@ -103,7 +103,7 @@ module Swiftcore
 
 			def cleanup
 				@logs.each do |service,l|
-					l.logfile.fsync if !l.logfile.closed? and l.logfile.fileno > 2
+          l.logfile.fsync if l.logfile.kind_of? File and !l.logfile.closed? and l.logfile.fileno > 2
 					l.logfile.close unless l.logfile.closed? or l.logfile.fileno < 3
 				end
 			end
@@ -185,6 +185,8 @@ module Swiftcore
 					$stdout
 				elsif logfile =~ /^STDERR$/i
 					$stderr
+        elsif logfile =~ /\A\|/
+          Kernel.open(logfile,'wb')
 				else
 					File.open(logfile,'ab+')
 				end
@@ -229,7 +231,7 @@ module Swiftcore
 			end
 
 			def flush_queue
-				@logs.each_value {|l| l.logfile.fsync if l.logfile.fileno > 2}
+        @logs.each_value {|l| l.logfile.fsync if l.logfile.kind_of? File and l.logfile.fileno > 2}
 			end
 
 			def key
